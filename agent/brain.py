@@ -15,11 +15,63 @@ from dotenv import load_dotenv
 load_dotenv()
 logger = logging.getLogger("agentkit")
 
-# Cliente de Groq (compatible con formato OpenAI)
-client = AsyncGroq(api_key=os.getenv("GROQ_API_KEY"))
-
-# Modelo por defecto — configurable via .env
+# Modelo por defecto — configurable via env
 MODELO = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+
+# Cliente Groq con inicialización lazy.
+# NO se construye al importar el módulo: si GROQ_API_KEY no está presente,
+# el import seguiría funcionando y los logs de startup pueden ejecutarse
+# antes de que falle la primera llamada al LLM (con un error informativo).
+_client: AsyncGroq | None = None
+
+
+def validar_configuracion() -> dict:
+    """
+    Devuelve un diagnóstico seguro del estado de las env vars del LLM.
+    Pensado para loguear al startup. NUNCA devuelve la API key completa.
+    """
+    api_key = os.getenv("GROQ_API_KEY")
+    return {
+        "GROQ_API_KEY_present": bool(api_key),
+        "GROQ_API_KEY_length": len(api_key) if api_key else 0,
+        "GROQ_API_KEY_prefix": (api_key[:4] + "...") if api_key else "(missing)",
+        "GROQ_MODEL": MODELO,
+    }
+
+
+def _get_client() -> AsyncGroq:
+    """
+    Construye el cliente Groq la primera vez que se usa.
+    Si GROQ_API_KEY no está, levanta RuntimeError con mensaje DIAGNÓSTICO claro.
+    """
+    global _client
+    if _client is not None:
+        return _client
+
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        # Lista los nombres de env vars visibles, sin valores, para diagnóstico.
+        # Filtra ruido del SO para que el mensaje quede legible en logs de Railway.
+        ruido = ("PATH", "PYTHON", "LANG", "LC_", "HOME", "PWD", "SHLVL",
+                "TERM", "USER", "HOSTNAME", "OLDPWD", "_=")
+        visibles = sorted(
+            k for k in os.environ
+            if not any(k.startswith(p) for p in ruido)
+        )
+        raise RuntimeError(
+            "GROQ_API_KEY no está disponible en el entorno del contenedor.\n"
+            f"Variables de entorno presentes (sin valores): {visibles}\n"
+            f"Total de env vars: {len(os.environ)}\n"
+            "Verificá en Railway:\n"
+            "  1. Variables están en el SERVICIO, no a nivel de proyecto\n"
+            "  2. El nombre es exactamente GROQ_API_KEY (case-sensitive)\n"
+            "  3. El valor empieza con gsk_ y no tiene comillas ni espacios\n"
+            "  4. Hiciste 'Redeploy' después de guardar las variables"
+        )
+
+    _client = AsyncGroq(api_key=api_key)
+    logger.info(f"Cliente Groq inicializado (key prefix: {api_key[:4]}..., longitud: {len(api_key)})")
+    return _client
 
 
 def cargar_config_prompts() -> dict:
@@ -78,6 +130,7 @@ async def generar_respuesta(mensaje: str, historial: list[dict]) -> str:
     mensajes.append({"role": "user", "content": mensaje})
 
     try:
+        client = _get_client()
         response = await client.chat.completions.create(
             model=MODELO,
             messages=mensajes,

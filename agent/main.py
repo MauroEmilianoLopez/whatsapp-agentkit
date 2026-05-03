@@ -13,7 +13,7 @@ from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import PlainTextResponse
 from dotenv import load_dotenv
 
-from agent.brain import generar_respuesta
+from agent.brain import generar_respuesta, validar_configuracion
 from agent.memory import inicializar_db, guardar_mensaje, obtener_historial
 from agent.providers import obtener_proveedor
 
@@ -30,9 +30,46 @@ proveedor = obtener_proveedor()
 PORT = int(os.getenv("PORT", 8000))
 
 
+def _diagnostico_arranque():
+    """Loguea el estado de las variables de entorno al arrancar.
+    No expone valores de secretos — sólo presencia, longitud y prefijo."""
+    logger.info("=" * 60)
+    logger.info("AgentKit — Diagnóstico de arranque")
+    logger.info("=" * 60)
+
+    # LLM (Groq)
+    config_llm = validar_configuracion()
+    for k, v in config_llm.items():
+        logger.info(f"  {k}: {v}")
+
+    # WhatsApp provider
+    logger.info(f"  WHATSAPP_PROVIDER: {os.getenv('WHATSAPP_PROVIDER', '(missing)')}")
+    whapi_token = os.getenv("WHAPI_TOKEN")
+    logger.info(f"  WHAPI_TOKEN_present: {bool(whapi_token)}")
+    if whapi_token:
+        logger.info(f"  WHAPI_TOKEN_length: {len(whapi_token)}")
+        logger.info(f"  WHAPI_TOKEN_prefix: {whapi_token[:4]}...")
+
+    # Otras
+    logger.info(f"  PORT: {os.getenv('PORT', '(missing)')}")
+    logger.info(f"  ENVIRONMENT: {os.getenv('ENVIRONMENT', '(missing)')}")
+    db_url = os.getenv("DATABASE_URL", "")
+    if "postgres" in db_url:
+        db_type = "postgres"
+    elif "sqlite" in db_url:
+        db_type = "sqlite"
+    else:
+        db_type = "(missing)"
+    logger.info(f"  DATABASE_TYPE: {db_type}")
+
+    logger.info(f"  Total env vars in container: {len(os.environ)}")
+    logger.info("=" * 60)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Inicializa la base de datos al arrancar el servidor."""
+    _diagnostico_arranque()
     await inicializar_db()
     logger.info("Base de datos inicializada")
     logger.info(f"Servidor AgentKit corriendo en puerto {PORT}")
