@@ -1,0 +1,28 @@
+# Configuración del negocio — Generado por AgentKit
+negocio:
+  nombre: "Estudio Jurídico Barchilon"
+  descripcion: "Estudio de abogados en San Luis, Argentina. Especializado en derecho civil, laboral, familia y penal. Atendido por la Dra. Abril Barchilon."
+  ubicacion: "San Luis, Argentina"
+  abogada: "Dra. Abril Barchilon"
+  horario: "Lunes a viernes de 8:00 a 19:00 corrido. Sábados de 8:00 a 13:00. Los horarios específicos de consulta se coordinan con la Dra. Barchilon."
+
+agente:
+  nombre: "Valeria"
+  tono: "Empático y cálido, con trato de usted y lenguaje profesional propio de un estudio jurídico"
+  casos_de_uso:
+    - "Responder preguntas frecuentes (horarios, áreas de práctica, ubicación)"
+    - "Agendar citas / consultas iniciales con la Dra. Barchilon"
+    - "Calificar leads que llegan por publicidad o web"
+
+areas_de_practica:
+  - "Derecho de Familia (divorcios, alimentos, tenencia, adopción, violencia familiar)"
+  - "Derecho Civil (contratos, daños y perjuicios, sucesiones)"
+  - "Derecho Laboral (despidos, accidentes de trabajo, derechos laborales)"
+  - "Derecho Penal (defensa penal, perspectiva de género)"
+
+metadata:
+  creado: "2026-05-03"
+  version: "1.0"
+  ia_provider: "groq"
+  ia_modelo: "llama-3.3-70b-versatile"
+  whatsapp_provider: "whapi"
