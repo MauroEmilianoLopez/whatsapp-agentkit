@@ -1,0 +1,41 @@
+# Secretos: nunca dentro de la imagen
+.env
+.env.*
+!.env.example
+# (.env.example puede entrar — es público y Railway no lo lee al runtime)
+
+# Python build artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+
+# Base de datos local
+*.db
+*.sqlite
+*.sqlite3
+
+# Datos generados en runtime
+data/
+
+# Git / IDE / OS
+.git/
+.gitignore
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+
+# Markdown del usuario / README — opcional, no afecta runtime
+README.md
+LICENSE
+CLAUDE.md
+
+# Knowledge: el contenido del negocio NO viaja en la imagen
+# (lo monta Railway via env vars o volumen, o ya está en config/prompts.yaml)
+knowledge/

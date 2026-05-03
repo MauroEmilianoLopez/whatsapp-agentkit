@@ -17,7 +17,7 @@ from agent.brain import generar_respuesta, validar_configuracion
 from agent.memory import inicializar_db, guardar_mensaje, obtener_historial
 from agent.providers import obtener_proveedor
 
-load_dotenv()
+load_dotenv(override=False)
 
 # Configuración de logging según entorno
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")

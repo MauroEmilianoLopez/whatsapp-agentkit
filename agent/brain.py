@@ -12,7 +12,10 @@ import logging
 from groq import AsyncGroq
 from dotenv import load_dotenv
 
-load_dotenv()
+# override=False explícito: no pisar variables que ya estén en el entorno del proceso
+# (las que inyecta Railway, Docker -e, systemd, etc.). Es el default de la librería,
+# pero lo hacemos explícito para que nadie lo cambie por accidente.
+load_dotenv(override=False)
 logger = logging.getLogger("agentkit")
 
 # Modelo por defecto — configurable via env
