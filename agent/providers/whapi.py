@@ -18,15 +18,41 @@ class ProveedorWhapi(ProveedorWhatsApp):
         self.url_envio = "https://gate.whapi.cloud/messages/text"
 
     async def parsear_webhook(self, request: Request) -> list[MensajeEntrante]:
-        """Parsea el payload de Whapi.cloud."""
+        """
+        Parsea el payload de Whapi.cloud y aplica filtros para que el agente
+        sólo procese mensajes válidos. Los mensajes filtrados se loguean en
+        DEBUG para no contaminar los logs de producción.
+
+        Filtros aplicados (en orden):
+          1. chat_id termina en @g.us  → grupo, ignorar
+          2. from_me == true           → mensaje propio del canal, evitar loop
+          3. type in {system, notification} → notificación de WhatsApp
+        """
         body = await request.json()
         mensajes = []
         for msg in body.get("messages", []):
+            mensaje_id = msg.get("id", "")
+            chat_id = msg.get("chat_id", "")
+            msg_type = msg.get("type", "text")
+            from_me = msg.get("from_me", False)
+
+            if chat_id.endswith("@g.us"):
+                logger.debug(f"Ignorado (grupo): chat_id={chat_id} id={mensaje_id}")
+                continue
+
+            if from_me:
+                logger.debug(f"Ignorado (propio): id={mensaje_id}")
+                continue
+
+            if msg_type in ("system", "notification"):
+                logger.debug(f"Ignorado (tipo {msg_type!r}): id={mensaje_id}")
+                continue
+
             mensajes.append(MensajeEntrante(
-                telefono=msg.get("chat_id", ""),
+                telefono=chat_id,
                 texto=msg.get("text", {}).get("body", ""),
-                mensaje_id=msg.get("id", ""),
-                es_propio=msg.get("from_me", False),
+                mensaje_id=mensaje_id,
+                es_propio=from_me,
             ))
         return mensajes
 
