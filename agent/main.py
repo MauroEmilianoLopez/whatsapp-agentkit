@@ -7,10 +7,12 @@ Funciona con cualquier proveedor (Whapi, Meta, Twilio) gracias a la capa de prov
 """
 
 import os
+import hmac
 import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Header, Request, HTTPException
 from fastapi.responses import PlainTextResponse
+from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 
 from agent.brain import generar_respuesta, validar_configuracion
@@ -137,3 +139,32 @@ async def webhook_handler(request: Request):
     except Exception as e:
         logger.error(f"Error en webhook: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+class NotifyRequest(BaseModel):
+    phone: str = Field(min_length=1)
+    message: str = Field(min_length=1)
+
+
+@app.post("/notify")
+async def notify(payload: NotifyRequest, x_notify_token: str | None = Header(default=None)):
+    """
+    Envía un WhatsApp directo al cliente sin pasar por el LLM.
+    Pensado para que el CRM dispare notificaciones automáticas
+    (pagos, tareas, audiencias, etapa final).
+    """
+    expected = os.getenv("VALERIA_NOTIFY_TOKEN")
+    if not expected:
+        logger.error("VALERIA_NOTIFY_TOKEN no configurado")
+        raise HTTPException(status_code=500, detail="server_misconfigured")
+
+    if not x_notify_token or not hmac.compare_digest(x_notify_token, expected):
+        raise HTTPException(status_code=401, detail="unauthorized")
+
+    phone_tail = payload.phone[-4:] if len(payload.phone) >= 4 else "***"
+    logger.info(f"/notify phone=****{phone_tail} msg_len={len(payload.message)}")
+
+    ok = await proveedor.enviar_mensaje(payload.phone, payload.message)
+    if not ok:
+        return {"ok": False, "error": "whapi_send_failed"}
+    return {"ok": True}
