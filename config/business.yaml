@@ -1,28 +1,36 @@
-# Configuración del negocio — Generado por AgentKit
+﻿# Configuración del negocio — Multimarca San Luis (VendIA)
+# Fuente única de datos del negocio. El system prompt en prompts.yaml
+# referencia esta información. NO duplicar datos entre archivos.
+
 negocio:
-  nombre: "Estudio Jurídico Barchilon"
-  descripcion: "Estudio de abogados en San Luis, Argentina. Especializado en derecho civil, laboral, familia y penal. Atendido por la Dra. Abril Barchilon."
-  ubicacion: "San Luis, Argentina"
-  abogada: "Dra. Abril Barchilon"
-  horario: "Lunes a viernes de 8:00 a 19:00 corrido. Sábados de 8:00 a 13:00. Los horarios específicos de consulta se coordinan con la Dra. Barchilon."
+  nombre: "Multimarca San Luis"
+  descripcion: "Concesionaria multimarca de autos usados en San Luis, Argentina. Stock de 15 a 30 unidades en piso. Marcas: Ford, VW, Toyota, Chevrolet, Renault, Fiat."
+  dueno: "Roberto Mendez"
+  direccion: "Av. Lafinur 1234, San Luis Capital"
+  horario: "Lunes a viernes de 9:00 a 13:00 y de 16:00 a 20:00. Sábados de 9:00 a 13:00."
 
 agente:
-  nombre: "Valeria"
-  tono: "Empático y cálido, con trato de usted y lenguaje profesional propio de un estudio jurídico"
-  casos_de_uso:
-    - "Responder preguntas frecuentes (horarios, áreas de práctica, ubicación)"
-    - "Agendar citas / consultas iniciales con la Dra. Barchilon"
-    - "Calificar leads que llegan por publicidad o web"
+  nombre: "Vendia"
+  tono: "Vendedor con onda, educado pero no formal. Tratamiento de 'vos' por defecto, se adapta a 'usted' si el cliente lo usa."
+  objetivo: "Recibir consultas de WhatsApp, responder dudas comerciales, calificar leads y derivar clientes calientes al vendedor humano."
 
-areas_de_practica:
-  - "Derecho de Familia (divorcios, alimentos, tenencia, adopción, violencia familiar)"
-  - "Derecho Civil (contratos, daños y perjuicios, sucesiones)"
-  - "Derecho Laboral (despidos, accidentes de trabajo, derechos laborales)"
-  - "Derecho Penal (defensa penal, perspectiva de género)"
+vendedores:
+  - nombre: "Lucas"
+  - nombre: "Diego"
+
+financiacion:
+  planes_propios: true
+  bancos: ["Galicia", "Santander"]
+
+permutas:
+  acepta: true
+  modalidad: "Presencial en piso, el vendedor tasa el vehículo"
+
+garantia: "30 días motor y caja"
 
 metadata:
-  creado: "2026-05-03"
+  creado: "2026-06-06"
   version: "1.0"
   ia_provider: "groq"
   ia_modelo: "llama-3.3-70b-versatile"
-  whatsapp_provider: "whapi"
+  whatsapp_provider: "meta"
