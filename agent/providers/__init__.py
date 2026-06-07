@@ -6,12 +6,16 @@ Selecciona el proveedor de WhatsApp según la variable WHATSAPP_PROVIDER en .env
 """
 
 import os
+import logging
 from agent.providers.base import ProveedorWhatsApp
+
+logger = logging.getLogger("agentkit")
 
 
 def obtener_proveedor() -> ProveedorWhatsApp:
     """Retorna el proveedor de WhatsApp configurado en .env."""
     proveedor = os.getenv("WHATSAPP_PROVIDER", "whapi").lower()
+    logger.info(f"Inicializando proveedor: {proveedor}")
 
     if proveedor == "whapi":
         from agent.providers.whapi import ProveedorWhapi

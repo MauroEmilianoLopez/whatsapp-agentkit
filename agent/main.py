@@ -45,12 +45,26 @@ def _diagnostico_arranque():
         logger.info(f"  {k}: {v}")
 
     # WhatsApp provider
-    logger.info(f"  WHATSAPP_PROVIDER: {os.getenv('WHATSAPP_PROVIDER', '(missing)')}")
-    whapi_token = os.getenv("WHAPI_TOKEN")
-    logger.info(f"  WHAPI_TOKEN_present: {bool(whapi_token)}")
-    if whapi_token:
-        logger.info(f"  WHAPI_TOKEN_length: {len(whapi_token)}")
-        logger.info(f"  WHAPI_TOKEN_prefix: {whapi_token[:4]}...")
+    provider_name = os.getenv("WHATSAPP_PROVIDER", "(missing)")
+    logger.info(f"  WHATSAPP_PROVIDER: {provider_name}")
+
+    if provider_name == "whapi":
+        whapi_token = os.getenv("WHAPI_TOKEN")
+        logger.info(f"  WHAPI_TOKEN_present: {bool(whapi_token)}")
+        if whapi_token:
+            logger.info(f"  WHAPI_TOKEN_length: {len(whapi_token)}")
+            logger.info(f"  WHAPI_TOKEN_prefix: {whapi_token[:4]}...")
+
+    elif provider_name == "meta":
+        meta_token = os.getenv("META_ACCESS_TOKEN")
+        phone_id = os.getenv("META_PHONE_NUMBER_ID")
+        logger.info(f"  META_ACCESS_TOKEN_present: {bool(meta_token)}")
+        if meta_token:
+            logger.info(f"  META_ACCESS_TOKEN_length: {len(meta_token)}")
+            logger.info(f"  META_ACCESS_TOKEN_prefix: {meta_token[:4]}...")
+        logger.info(f"  META_PHONE_NUMBER_ID: {phone_id or '(missing)'}")
+        verify_token = os.getenv("META_VERIFY_TOKEN")
+        logger.info(f"  META_VERIFY_TOKEN_present: {bool(verify_token)}")
 
     # Otras
     logger.info(f"  PORT: {os.getenv('PORT', '(missing)')}")
@@ -97,7 +111,7 @@ async def webhook_verificacion(request: Request):
     """Verificación GET del webhook (requerido por Meta Cloud API, no-op para otros)."""
     resultado = await proveedor.validar_webhook(request)
     if resultado is not None:
-        return PlainTextResponse(str(resultado))
+        return resultado
     return {"status": "ok"}
 
 
